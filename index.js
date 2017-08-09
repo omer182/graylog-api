@@ -1,8 +1,9 @@
 var request = require('request');
+var logger = require('./logger');
 var methods = require('./api-methods');
 
 function serializeObjToUri(obj) {
-  return Object.keys(obj).map(function(key) {
+  return Object.keys(obj).map(function (key) {
     return key + '=' + encodeURIComponent(obj[key]);
   }).join('&');
 }
@@ -11,7 +12,7 @@ function buildBasicAuthHeader(obj) {
   return 'Basic ' + new Buffer(obj.username + ':' + obj.password).toString('base64');
 }
 
-var Api = function(config) {
+var Api = function (config) {
   this._protocol = config.protocol || 'http'; // or https
   this._auth = (config.basicAuth) ? buildBasicAuthHeader(config.basicAuth) : '';
   this._host = config.host || 'localhost';
@@ -20,18 +21,18 @@ var Api = function(config) {
   this._uri = this._protocol + '://' + this._host + ':' + this._port + this._path;
 };
 
-Object.keys(methods).forEach(function(mName) {
+Object.keys(methods).forEach(function (mName) {
 
   var m = methods[mName];
 
-  Api.prototype[mName] = function(parameters, path, callback) {
+  Api.prototype[mName] = function (parameters, path, callback) {
 
     if (arguments.length === 1) callback = parameters;
     if (arguments.length === 2) callback = path;
 
     var computedPath = m.path;
     if (typeof arguments[1] === 'object') {
-      computedPath = m.path.replace(/{([^}]*)}/g, function(s, p) {
+      computedPath = m.path.replace(/{([^}]*)}/g, function (s, p) {
         return path[p];
       });
     }
@@ -54,21 +55,21 @@ Object.keys(methods).forEach(function(mName) {
       json: false
     };
 
-    request(opts, function(error, response, body) {
+    request(opts, function (error, response, body) {
+      logger.trace('DEBUG raw response from graylog: error: ' + JSON.stringify(error));
       if (error) {
         return callback([error, body]);
       }
-
+      logger.trace('DEBUG raw response from graylog: body: ' + JSON.stringify(body));
       try {
         /*
         removeStream() will respond an empty body;
         we need a fallback to prevent JSON.parse(body) to fail
          */
-        if(body === '')
-            body = '{}';
+        if (body === '')
+          body = '{}';
         callback(null, JSON.parse(body));
-      }
-      catch (err) {
+      } catch (err) {
         callback(['Bad response', err, reqUri]);
       }
     });
@@ -76,7 +77,7 @@ Object.keys(methods).forEach(function(mName) {
 
 });
 
-var connect = function(config, callback) {
+var connect = function (config, callback) {
   var that = new Api(config);
   return that;
 };
