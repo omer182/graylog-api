@@ -1,7 +1,6 @@
 'use strict'
 
-var bunyan = require('bunyan'),
-    common = require('./common-constants');
+var bunyan = require('bunyan');
 
 var logger = bunyan.createLogger({
     name: 'payments-trace',
