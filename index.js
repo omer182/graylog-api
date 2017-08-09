@@ -60,7 +60,7 @@ Object.keys(methods).forEach(function (mName) {
       if (error) {
         return callback([error, body]);
       }
-      logger.trace('DEBUG raw response from graylog: body: ' + JSON.stringify(body));
+      logger.trace('DEBUG raw response from graylog: response: ' + JSON.stringify(response));
       try {
         /*
         removeStream() will respond an empty body;
